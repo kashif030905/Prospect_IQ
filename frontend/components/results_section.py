@@ -2,26 +2,27 @@ import streamlit as st
 
 def render_results_section(results: dict):
     """
-    Renders the analysis results from all agents.
-    results: dictionary containing comparison, risks, negotiation, recommendation
+    Renders the analysis results in a professional tabbed layout.
     """
     st.header("📊 Procurement Analysis Results")
 
-    # Vendor Comparison
-    st.subheader("🔍 Vendor Comparison")
-    st.markdown(results.get("comparison", "No comparison available"))
-    st.divider()
+    # Show results in tabs
+    tab1, tab2, tab3, tab4 = st.tabs([
+        "🔍 Vendor Comparison",
+        "⚠️ Risk Analysis",
+        "🤝 Negotiation",
+        "✅ Recommendation"
+    ])
 
-    # Risk Analysis
-    st.subheader("⚠️ Risk Analysis")
-    st.markdown(results.get("risks", "No risk analysis available"))
-    st.divider()
+    with tab1:
+        st.markdown(results.get("comparison", "No comparison available"))
 
-    # Negotiation Strategies
-    st.subheader("🤝 Negotiation Strategies")
-    st.markdown(results.get("negotiation", "No negotiation strategies available"))
-    st.divider()
+    with tab2:
+        st.markdown(results.get("risks", "No risk analysis available"))
 
-    # Final Recommendation
-    st.subheader("✅ Final Recommendation")
-    st.markdown(results.get("recommendation", "No recommendation available"))
+    with tab3:
+        st.markdown(results.get("negotiation", "No negotiation strategies available"))
+
+    with tab4:
+        # Highlight the recommendation
+        st.info(results.get("recommendation", "No recommendation available"))
