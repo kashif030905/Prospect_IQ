@@ -1,0 +1,11 @@
+langchain==0.3.25
+langchain-anthropic==0.3.15
+langgraph==0.4.8
+fastapi==0.115.12
+uvicorn==0.34.3
+python-multipart==0.0.20
+pymupdf==1.25.5
+streamlit==1.45.1
+python-dotenv==1.1.0
+requests==2.32.3
+pydantic==2.11.4

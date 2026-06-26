@@ -1,0 +1,16 @@
+# Virtual environment
+venv/
+
+# Secret keys - NEVER commit this
+.env
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+
+# Mac system files
+.DS_Store
+
+# VSCode settings
+.vscode/
