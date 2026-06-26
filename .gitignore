@@ -13,4 +13,4 @@ __pycache__/
 .DS_Store
 
 # VSCode settings
-.vscode/
+.vscode/docs/diagrams/*.png_files/
