@@ -1,28 +1,23 @@
 import streamlit as st
 
 def render_results_section(results: dict):
-    """
-    Renders the analysis results in a professional tabbed layout.
-    """
-    st.header("📊 Procurement Analysis Results")
+    st.header("📊 Customer Discovery Results")
 
-    # Show results in tabs
     tab1, tab2, tab3, tab4 = st.tabs([
-        "🔍 Vendor Comparison",
-        "⚠️ Risk Analysis",
-        "🤝 Negotiation",
-        "✅ Recommendation"
+        "🏢 Companies Found",
+        "✅ Validated Companies", 
+        "👤 Decision Makers",
+        "🎯 Recommendation"
     ])
 
     with tab1:
-        st.markdown(results.get("comparison", "No comparison available"))
+        st.markdown(results.get("companies_found", "No companies found yet"))
 
     with tab2:
-        st.markdown(results.get("risks", "No risk analysis available"))
+        st.markdown(results.get("validated_companies", "No validated companies yet"))
 
     with tab3:
-        st.markdown(results.get("negotiation", "No negotiation strategies available"))
+        st.markdown(results.get("decision_makers", "No decision makers found yet"))
 
     with tab4:
-        # Highlight the recommendation
-        st.info(results.get("recommendation", "No recommendation available"))
+        st.info(results.get("recommendation", "No recommendation yet"))
