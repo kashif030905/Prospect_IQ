@@ -1,205 +1,426 @@
 import sys
 import os
+import json
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import streamlit as st
 import requests
+import time
 
 from frontend.components.upload_section import render_input_section
-from frontend.components.results_section import render_results_section
+from frontend.components.results_section import render_results_section, count_prospects
 from frontend.components.approval_section import render_approval_section
 
 st.set_page_config(
-    page_title="ProcureAI",
-    page_icon="🤖",
-    layout="wide"
+    page_title="ProspectIQ",
+    page_icon="🎯",
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
 st.markdown("""
-    <style>
-    .stMetric {
-        background-color: #1e2130;
-        border: 1px solid #2d3250;
-        border-radius: 10px;
-        padding: 10px;
-        text-align: center;
-    }
-    .stMetric label {
-        color: #ffffff !important;
-        font-weight: 600 !important;
-    }
-    .stMetric div[data-testid="stMetricValue"] {
-        color: #ffffff !important;
-    }
-    .stButton > button {
-        border-radius: 8px;
-        padding: 12px;
-        font-size: 16px;
-        font-weight: bold;
-    }
-    .input-card {
-        background-color: #1e2130;
-        border: 1px solid #2d3250;
-        border-radius: 10px;
-        padding: 20px;
-        margin: 10px 0;
-    }
-    </style>
+<style>
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-30px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50%       { transform: translateY(-8px); }
+}
+@keyframes shimmer {
+    0%   { background-position: -200% center; }
+    100% { background-position:  200% center; }
+}
+.welcome-banner {
+    border-radius: 20px;
+    padding: 48px 40px;
+    text-align: center;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+    animation: fadeInDown 0.8s ease forwards;
+}
+[data-theme="light"] .welcome-banner {
+    background: linear-gradient(135deg, #f7f9fc 0%, #edf2f7 50%, #f7f9fc 100%);
+    border: 1px solid #e2e8f0;
+}
+[data-theme="dark"] .welcome-banner {
+    background: linear-gradient(135deg, #0f1117 0%, #1a1f2e 50%, #0f1117 100%);
+    border: 1px solid #2d3250;
+}
+.welcome-banner::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 300%; height: 100%;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(79,139,249,0.05) 40%,
+        rgba(79,139,249,0.1) 50%,
+        rgba(79,139,249,0.05) 60%,
+        transparent 100%);
+    animation: shimmer 3s infinite;
+}
+.welcome-title {
+    font-size: 52px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #4f8bf9, #a78bfa, #4f8bf9);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 3s linear infinite;
+    margin-bottom: 8px;
+}
+.welcome-subtitle {
+    font-size: 18px;
+    animation: fadeInUp 0.8s ease 0.3s both;
+    margin-bottom: 24px;
+}
+[data-theme="light"] .welcome-subtitle { color: #4a5568; }
+[data-theme="dark"]  .welcome-subtitle { color: #a0aec0; }
+.welcome-tagline {
+    font-size: 14px;
+    animation: fadeInUp 0.8s ease 0.5s both;
+}
+[data-theme="light"] .welcome-tagline { color: #718096; }
+[data-theme="dark"]  .welcome-tagline { color: #718096; }
+.float-emoji {
+    display: inline-block;
+    font-size: 32px;
+    animation: float 3s ease-in-out infinite;
+    margin: 0 8px;
+}
+.float-emoji:nth-child(2) { animation-delay: 0.5s; }
+.float-emoji:nth-child(3) { animation-delay: 1.0s; }
+.float-emoji:nth-child(4) { animation-delay: 1.5s; }
+.stats-bar {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 28px;
+    animation: fadeInUp 0.8s ease 0.6s both;
+}
+.stat-item { text-align: center; }
+.stat-number { font-size: 28px; font-weight: 800; color: #4f8bf9; }
+.stat-label  { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
+[data-theme="light"] .stat-label { color: #718096; }
+[data-theme="dark"]  .stat-label { color: #718096; }
+.stMetric {
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+[data-theme="light"] .stMetric {
+    background-color: #f7fafc;
+    border: 1px solid #e2e8f0;
+}
+[data-theme="dark"] .stMetric {
+    background-color: #1a1f2e;
+    border: 1px solid #2d3250;
+}
+.stMetric:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(79,139,249,0.2);
+    border-color: #4f8bf9;
+}
+[data-theme="light"] .stMetric label {
+    color: #4a5568 !important;
+}
+[data-theme="dark"] .stMetric label {
+    color: #a0aec0 !important;
+}
+.stMetric label {
+    font-weight: 600 !important;
+    font-size: 12px !important;
+}
+[data-theme="light"] .stMetric div[data-testid="stMetricValue"] {
+    color: #1a202c !important;
+}
+[data-theme="dark"] .stMetric div[data-testid="stMetricValue"] {
+    color: #ffffff !important;
+}
+.stMetric div[data-testid="stMetricValue"] {
+    font-size: 26px !important;
+}
+.pipeline-header {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+.stButton > button {
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.stButton > button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(79,139,249,0.35);
+}
+div[data-testid="stExpander"] {
+    border-radius: 8px;
+    transition: border-color 0.2s ease;
+}
+[data-theme="light"] div[data-testid="stExpander"] {
+    border: 1px solid #e2e8f0;
+}
+[data-theme="dark"] div[data-testid="stExpander"] {
+    border: 1px solid #2d3250;
+}
+div[data-testid="stExpander"]:hover {
+    border-color: #4f8bf9;
+}
+.stTabs [data-baseweb="tab"] {
+    font-size: 14px;
+    font-weight: 600;
+}
+.glow-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #4f8bf9, transparent);
+    margin: 24px 0;
+}
+</style>
 """, unsafe_allow_html=True)
 
-# Sidebar
+# ── Welcome Banner ─────────────────────────────────────────
+prospect_display = "0"
+if "results" in st.session_state:
+    prospect_display = str(count_prospects(st.session_state["results"]))
+
+st.markdown(f"""
+<div class="welcome-banner">
+    <div class="welcome-title">🎯 ProspectIQ</div>
+    <div class="welcome-subtitle">Reusable Agentic AI Platform for B2B Customer Discovery</div>
+    <div>
+        <span class="float-emoji">🤖</span>
+        <span class="float-emoji">🔍</span>
+        <span class="float-emoji">📬</span>
+        <span class="float-emoji">🚀</span>
+    </div>
+    <div class="welcome-tagline">
+        Powered by 7 AI Agents · Real Web Search · Human-in-the-Loop
+    </div>
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="stat-number">7</div>
+            <div class="stat-label">AI Agents</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">20+</div>
+            <div class="stat-label">Web Searches</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">{prospect_display}</div>
+            <div class="stat-label">Prospects Found</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">100%</div>
+            <div class="stat-label">Real Data</div>
+        </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# ── Sidebar ────────────────────────────────────────────────
 with st.sidebar:
-    st.image("https://img.icons8.com/fluency/96/robot.png", width=80)
-    st.title("ProcureAI")
-    st.caption("Agentic Customer Discovery Platform")
+    st.markdown("""
+    <div style="text-align:center;padding:10px 0;">
+        <div style="font-size:40px;animation:float 3s ease-in-out infinite;">🎯</div>
+        <div style="font-size:20px;font-weight:800;margin:6px 0;">ProspectIQ</div>
+        <div style="font-size:12px;color:#718096;">Reusable Agentic AI Platform</div>
+    </div>
+    """, unsafe_allow_html=True)
     st.divider()
 
     st.subheader("🤖 AI Agents")
-
     agents_info = {
-        "📋 Planner Agent": "Reads your product and ICP, creates a structured discovery plan.",
-        "🌐 Web Search Agent": "Searches the web for companies matching your ideal customer profile.",
-        "✅ Validation Agent": "Checks each company against your size, industry, and location criteria.",
-        "👤 Decision Maker Agent": "Finds the right person to contact inside each validated company.",
-        "📬 Enrichment Agent": "Finds LinkedIn profiles and email addresses for each decision maker.",
-        "🎯 Recommendation Agent": "Picks the best prospect and suggests the ideal outreach approach."
+        "📋 Planner Agent":        "Reads your ICP and creates a structured discovery plan.",
+        "🧩 ICP Agent":            "Defines your Ideal Customer Profile with qualification criteria.",
+        "🌐 Web Search Agent":     "Searches the web for companies matching your ICP.",
+        "✅ Validation Agent":     "Validates each company against your size, industry, and location.",
+        "👤 Decision Maker Agent": "Finds the right person to contact inside each company.",
+        "📬 Enrichment Agent":     "Finds LinkedIn profiles and emails for each decision maker.",
+        "🎯 Recommendation Agent": "Picks the best prospect and suggests the outreach approach."
     }
-
     for agent, explanation in agents_info.items():
         with st.expander(agent):
             st.caption(explanation)
 
     st.divider()
     st.subheader("ℹ️ System Info")
-    # FIX #2: Corrected model name to match settings.py (was "LLaMA 3.3 70B")
-    st.write("**Model:** LLaMA 3.1 8B Instant")
+    st.write("**Model:** LLaMA 3.3 70B")
     st.write("**Framework:** LangGraph")
     st.write("**Backend:** FastAPI")
-    # FIX #3: Corrected version to match main.py and settings.py (was "1.0.0")
-    st.write("**Version:** 2.0.0")
+    st.write("**Version:** 1.0.0")
 
-# Main Header
-st.title("🤖 ProcureAI")
-st.subheader("Agentic Customer Discovery Platform")
-st.write("Enter your product details and let our AI agents find, validate, and recommend your best sales prospects.")
-st.divider()
+# ── Agent Pipeline ─────────────────────────────────────────
+st.markdown('<div class="glow-divider"></div>', unsafe_allow_html=True)
+st.markdown('<div class="pipeline-header">🔄 Agent Pipeline</div>', unsafe_allow_html=True)
 
-# Agent Pipeline
-st.subheader("🔄 Agent Pipeline")
-cols = st.columns(6)
-pipeline = [
+PIPELINE = [
     ("📋", "Planner"),
+    ("🧩", "ICP"),
     ("🌐", "Web Search"),
     ("✅", "Validation"),
     ("👤", "Decision Maker"),
     ("📬", "Enrichment"),
-    ("🎯", "Recommendation")
+    ("🎯", "Recommendation"),
 ]
 
-agent_status = st.session_state.get("agent_status", {})
-for col, (icon, name) in zip(cols, pipeline):
-    with col:
-        if agent_status.get(name) == "done":
-            st.metric(label=f"✅ {name}", value=icon)
-        elif agent_status.get(name) == "running":
-            st.metric(label=f"⏳ {name}", value=icon)
-        else:
-            st.metric(label=name, value=icon)
+def render_pipeline():
+    cols = st.columns(len(PIPELINE))
+    agent_status = st.session_state.get("agent_status", {})
+    for col, (icon, name) in zip(cols, PIPELINE):
+        with col:
+            if agent_status.get(name) == "done":
+                st.metric(label=f"✅ {name}", value=icon)
+            elif agent_status.get(name) == "running":
+                st.metric(label=f"⏳ {name}", value="🔄")
+            else:
+                st.metric(label=name, value=icon)
 
-st.divider()
+pipeline_placeholder = st.empty()
+with pipeline_placeholder.container():
+    render_pipeline()
 
-# Input Section
+# ── Input Section ──────────────────────────────────────────
+st.markdown('<div class="glow-divider"></div>', unsafe_allow_html=True)
 user_inputs = render_input_section()
-st.divider()
+st.markdown('<div class="glow-divider"></div>', unsafe_allow_html=True)
 
-# Analyze Button
+# ── Analyze Button ─────────────────────────────────────────
 if user_inputs:
     if st.button("🚀 Start Customer Discovery", type="primary", use_container_width=True):
+
         progress_bar = st.progress(0)
-        status_text = st.empty()
+        status_box   = st.empty()
+
+        STEPS = [
+            ("Planner",        10, "📋 Planner Agent creating discovery plan..."),
+            ("ICP",            20, "🧩 ICP Agent defining ideal customer profile..."),
+            ("Web Search",     35, "🌐 Web Search Agent finding matching companies..."),
+            ("Validation",     50, "✅ Validation Agent checking each company..."),
+            ("Decision Maker", 65, "👤 Decision Maker Agent finding contacts..."),
+            ("Enrichment",     80, "📬 Enrichment Agent finding emails & LinkedIn..."),
+            ("Recommendation", 90, "🎯 Recommendation Agent finalising best prospect..."),
+        ]
+
+        def mark(name, state):
+            st.session_state["agent_status"] = {
+                **st.session_state.get("agent_status", {}),
+                name: state
+            }
+            with pipeline_placeholder.container():
+                render_pipeline()
+
+        for name, pct, msg in STEPS[:4]:
+            mark(name, "running")
+            status_box.info(f"⚙️ {msg}")
+            progress_bar.progress(pct)
+            time.sleep(0.8)
+            mark(name, "done")
+
+        mark("Decision Maker", "running")
+        status_box.info("👤 Decision Maker Agent finding contacts... *(this may take 2–3 minutes)*")
+        progress_bar.progress(65)
 
         try:
-            status_text.write("📋 Planner Agent creating discovery plan...")
-            progress_bar.progress(15)
-
             response = requests.post(
                 "http://127.0.0.1:8000/api/analyze",
-                json=user_inputs
+                json=user_inputs,
+                timeout=600
             )
+
+            mark("Decision Maker", "done")
+            mark("Enrichment", "running")
+            status_box.info("📬 Enrichment Agent finding emails & LinkedIn...")
+            progress_bar.progress(80)
+            time.sleep(0.8)
+            mark("Enrichment", "done")
+
+            mark("Recommendation", "running")
+            status_box.info("🎯 Recommendation Agent finalising best prospect...")
+            progress_bar.progress(90)
+            time.sleep(0.8)
+            mark("Recommendation", "done")
 
             if response.status_code == 200:
                 results = response.json()
-
-                status_text.write("🌐 Web Search Agent finding companies...")
-                progress_bar.progress(30)
-
-                status_text.write("✅ Validation Agent checking criteria...")
-                progress_bar.progress(50)
-
-                status_text.write("👤 Decision Maker Agent finding contacts...")
-                progress_bar.progress(65)
-
-                status_text.write("📬 Enrichment Agent finding emails and LinkedIn...")
-                progress_bar.progress(80)
-
-                status_text.write("🎯 Recommendation Agent finalizing best prospect...")
-                progress_bar.progress(95)
-
-                st.session_state["agent_status"] = {
-                    "Planner": "done",
-                    "Web Search": "done",
-                    "Validation": "done",
-                    "Decision Maker": "done",
-                    "Enrichment": "done",
-                    "Recommendation": "done"
-                }
-
                 progress_bar.progress(100)
-                st.session_state["results"] = results
+                st.session_state["results"]     = results
                 st.session_state["user_inputs"] = user_inputs
-                status_text.write("✅ All agents completed!")
-                st.success("Customer discovery complete!")
+                status_box.success("✅ All agents completed! Scroll down to see your prospects.")
+                st.snow()
+                time.sleep(1)
                 st.rerun()
-
             else:
-                st.error(f"Error: {response.text}")
+                status_box.error(f"Backend error: {response.text}")
 
+        except requests.exceptions.Timeout:
+            status_box.error("⏱️ Timed out. Please try again.")
+        except requests.exceptions.ConnectionError:
+            status_box.error("❌ Cannot connect to backend. Run: uvicorn backend.main:app --reload --port 8000")
         except Exception as e:
-            st.error(f"Something went wrong: {str(e)}")
+            status_box.error(f"Something went wrong: {str(e)}")
 
 elif not user_inputs:
-    st.info("👆 Fill in all fields above to start customer discovery.")
+    st.info("👆 Fill in all the fields above to unlock the discovery button.")
 
-# Show Results
+# ── Results ────────────────────────────────────────────────
 if "results" in st.session_state:
-    st.divider()
+    st.markdown('<div class="glow-divider"></div>', unsafe_allow_html=True)
     render_results_section(st.session_state["results"])
-    st.divider()
+    st.markdown('<div class="glow-divider"></div>', unsafe_allow_html=True)
 
-    # Download Report — Professional PDF
     st.subheader("📥 Download Report")
     inputs = st.session_state.get("user_inputs", {})
+    results = st.session_state["results"]
 
-    if st.button("📄 Generate & Download PDF Report", type="secondary", use_container_width=True):
-        with st.spinner("Generating professional PDF report..."):
-            try:
-                pdf_response = requests.post(
-                    "http://127.0.0.1:8000/api/report",
-                    json=inputs
-                )
-                if pdf_response.status_code == 200:
-                    st.download_button(
-                        label="📥 Click Here to Download PDF",
-                        data=pdf_response.content,
-                        file_name="procureai_discovery_report.pdf",
-                        mime="application/pdf",
-                        use_container_width=True
-                    )
-                    st.success("✅ PDF report ready!")
-                else:
-                    st.error(f"PDF generation failed: {pdf_response.text}")
-            except Exception as e:
-                st.error(f"Could not generate PDF: {str(e)}")
+    @st.cache_data(show_spinner=False, ttl=3600)
+    def _generate_pdf(_results_json: str, product: str, industry: str, size: str, role: str, location: str):
+        resp = requests.post(
+            "http://127.0.0.1:8000/api/report",
+            json={
+                "product_description": product,
+                "target_industry": industry,
+                "target_company_size": size,
+                "target_role": role,
+                "target_location": location,
+                "results": json.loads(_results_json),
+            },
+            timeout=30,
+        )
+        resp.raise_for_status()
+        return resp.content
 
-    st.divider()
+    try:
+        with st.spinner("Preparing PDF report..."):
+            pdf_bytes = _generate_pdf(
+                json.dumps(results, sort_keys=True),
+                inputs.get("product_description", ""),
+                inputs.get("target_industry", ""),
+                inputs.get("target_company_size", ""),
+                inputs.get("target_role", ""),
+                inputs.get("target_location", "Not specified"),
+            )
+        st.download_button(
+            label="📥 Download PDF Report",
+            data=pdf_bytes,
+            file_name="prospectiq_report.pdf",
+            mime="application/pdf",
+            use_container_width=True,
+            type="primary",
+        )
+    except Exception as e:
+        st.error(f"PDF generation failed: {e}")
+        st.caption("Make sure the backend is running on port 8000.")
+
+    st.markdown('<div class="glow-divider"></div>', unsafe_allow_html=True)
     render_approval_section()

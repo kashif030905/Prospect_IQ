@@ -381,11 +381,20 @@ def generate_pdf_report(results: dict, vendor_names: list) -> bytes:
     y += 18
 
     companies_text = results.get("companies_found", "") or ""
-    company_count  = companies_text.count("COMPANY NAME") or companies_text.count("===")
-    company_count  = max(company_count, 3)
+    validated_text = results.get("validated_companies", "") or ""
 
-    _stat_card(page, "COMPANIES FOUND",     str(company_count),   MARGIN,           y, accent=NAVY)
-    _stat_card(page, "SHORTLISTED",         "3",                  MARGIN + 125,     y, accent=GREEN)
+    company_count = companies_text.count("COMPANY NAME")
+    if not company_count:
+        company_count = len(re.findall(r"COMPANY\s*\d+\s*:", validated_text))
+    if not company_count:
+        company_count = len(re.findall(r"COMPANY NAME\s*:", validated_text, re.I))
+
+    shortlist_count = len(re.findall(r"Pursue Now|#1 Priority|#2 Priority|#3 Priority", validated_text, re.I))
+    if not shortlist_count:
+        shortlist_count = company_count
+
+    _stat_card(page, "COMPANIES FOUND",     str(company_count or 0),   MARGIN,           y, accent=NAVY)
+    _stat_card(page, "SHORTLISTED",         str(shortlist_count or 0), MARGIN + 125,     y, accent=GREEN)
     _stat_card(page, "TARGET INDUSTRY",     industry[:12],        MARGIN + 250,     y, accent=NAVY_LIGHT)
     _stat_card(page, "TARGET LOCATION",     location[:14],        MARGIN + 375,     y, accent=TEAL)
 

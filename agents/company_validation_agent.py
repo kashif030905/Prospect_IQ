@@ -64,7 +64,7 @@ def company_validation_agent(state: ProcureAIState) -> ProcureAIState:
     │   Pain Point Fit     : __/15  [reasoning]
     │   Growth Signals     : __/10  [reasoning]
     │   ─────────────────────────────
-    │   TOTAL SCORE        : __/100
+    │   TOTAL SCORE        : [number]/100  (MUST be a real number, never __ or ?)
     │   ICP MATCH          : 🟢 STRONG / 🟡 MEDIUM / 🟠 WEAK / 🔴 NO FIT / ⛔ DISQUALIFIED
     ├─────────────────────────────────────────────────────────┤
     │ WHY WE SHOULD PURSUE
@@ -83,7 +83,7 @@ def company_validation_agent(state: ProcureAIState) -> ProcureAIState:
 
     | Rank | Company | Location ✓? | Score | ICP Match | Verdict |
     |------|---------|-------------|-------|-----------|---------|
-    | 1    | ...     | Yes/No      | __/100| Strong    | Pursue  |
+    | 1    | ...     | Yes/No      | [score]/100| Strong    | Pursue  |
     (fill for all companies, sorted by score descending)
 
     ═══════════════════════════════════════════════════════════

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import Response
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Any
 from backend.services.pdf_service import generate_pdf_report
 from agents.graph import discovery_graph
 
@@ -13,6 +13,10 @@ class DiscoveryRequest(BaseModel):
     target_company_size: str
     target_role: str
     target_location: Optional[str] = "Not specified"
+
+
+class ReportRequest(DiscoveryRequest):
+    results: Optional[dict[str, Any]] = None
 
 
 @router.post("/analyze")
@@ -66,27 +70,28 @@ async def approve_recommendation(approved: bool):
 
 
 @router.post("/report")
-async def download_report(request: DiscoveryRequest):
+async def download_report(request: ReportRequest):
     try:
-        initial_state = {
-            "product_description": request.product_description,
-            "target_industry": request.target_industry,
-            "company_size": request.target_company_size,
-            "target_persona": request.target_role,
-            "target_location": request.target_location or "Not specified",  # ✅ FIXED
-            "plan": None,
-            "icp_profile": None,
-            "companies_found": None,
-            "validated_companies": None,
-            "decision_makers": None,
-            "enriched_contacts": None,
-            "recommendations": None,
-            "human_approved": None
-        }
+        if request.results:
+            result = request.results
+        else:
+            initial_state = {
+                "product_description": request.product_description,
+                "target_industry": request.target_industry,
+                "company_size": request.target_company_size,
+                "target_persona": request.target_role,
+                "target_location": request.target_location or "Not specified",
+                "plan": None,
+                "icp_profile": None,
+                "companies_found": None,
+                "validated_companies": None,
+                "decision_makers": None,
+                "enriched_contacts": None,
+                "recommendations": None,
+                "human_approved": None
+            }
+            result = discovery_graph.invoke(initial_state)
 
-        result = discovery_graph.invoke(initial_state)
-
-        # Merge input fields into result so pdf_service can access them
         pdf_data = dict(result)
         pdf_data["product_description"] = request.product_description
         pdf_data["target_industry"]      = request.target_industry
@@ -100,7 +105,7 @@ async def download_report(request: DiscoveryRequest):
             content=pdf_bytes,
             media_type="application/pdf",
             headers={
-                "Content-Disposition": "attachment; filename=procureai_discovery_report.pdf"
+                "Content-Disposition": "attachment; filename=prospectiq_report.pdf"
             }
         )
 
