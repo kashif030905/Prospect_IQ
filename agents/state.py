@@ -10,6 +10,7 @@ class ProcureAIState(TypedDict):
     target_industry: str            # Which industry to target
     company_size: str               # Target company size
     target_persona: str             # Who to contact (CEO, CTO etc.)
+    target_location: str            # ✅ ADDED: Target geography (e.g. Mumbai, India)
 
     # Agent outputs
     plan: Optional[str]             # Planner Agent output

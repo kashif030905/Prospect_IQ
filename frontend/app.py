@@ -71,10 +71,12 @@ with st.sidebar:
 
     st.divider()
     st.subheader("ℹ️ System Info")
-    st.write("**Model:** LLaMA 3.3 70B")
+    # FIX #2: Corrected model name to match settings.py (was "LLaMA 3.3 70B")
+    st.write("**Model:** LLaMA 3.1 8B Instant")
     st.write("**Framework:** LangGraph")
     st.write("**Backend:** FastAPI")
-    st.write("**Version:** 1.0.0")
+    # FIX #3: Corrected version to match main.py and settings.py (was "1.0.0")
+    st.write("**Version:** 2.0.0")
 
 # Main Header
 st.title("🤖 ProcureAI")
@@ -174,41 +176,30 @@ if "results" in st.session_state:
     render_results_section(st.session_state["results"])
     st.divider()
 
-    # Download Report
+    # Download Report — Professional PDF
     st.subheader("📥 Download Report")
-    results = st.session_state["results"]
     inputs = st.session_state.get("user_inputs", {})
-    report = f"""
-PROCUREAI - CUSTOMER DISCOVERY REPORT
-=======================================
 
-PRODUCT: {inputs.get('product_description', 'N/A')}
-TARGET: {inputs.get('target_company_size', 'N/A')} | {inputs.get('target_industry', 'N/A')} | {inputs.get('target_role', 'N/A')}
-LOCATION: {inputs.get('target_location', 'N/A')}
-
-COMPANIES FOUND
----------------
-{results.get('companies_found', 'N/A')}
-
-VALIDATED COMPANIES
--------------------
-{results.get('validated_companies', 'N/A')}
-
-DECISION MAKERS
----------------
-{results.get('decision_makers', 'N/A')}
-
-FINAL RECOMMENDATION
---------------------
-{results.get('recommendation', 'N/A')}
-    """
-    st.download_button(
-        label="📥 Download Full Report",
-        data=report,
-        file_name="procureai_report.txt",
-        mime="text/plain",
-        use_container_width=True
-    )
+    if st.button("📄 Generate & Download PDF Report", type="secondary", use_container_width=True):
+        with st.spinner("Generating professional PDF report..."):
+            try:
+                pdf_response = requests.post(
+                    "http://127.0.0.1:8000/api/report",
+                    json=inputs
+                )
+                if pdf_response.status_code == 200:
+                    st.download_button(
+                        label="📥 Click Here to Download PDF",
+                        data=pdf_response.content,
+                        file_name="procureai_discovery_report.pdf",
+                        mime="application/pdf",
+                        use_container_width=True
+                    )
+                    st.success("✅ PDF report ready!")
+                else:
+                    st.error(f"PDF generation failed: {pdf_response.text}")
+            except Exception as e:
+                st.error(f"Could not generate PDF: {str(e)}")
 
     st.divider()
     render_approval_section()
