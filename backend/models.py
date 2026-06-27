@@ -1,17 +1,19 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import Optional
 
-# This model defines what data the frontend sends to the backend
-# when requesting an analysis
-class AnalysisRequest(BaseModel):
-    vendor_texts: List[str]  # List of text extracted from each PDF
-    vendor_names: List[str]  # List of vendor names
+class DiscoveryRequest(BaseModel):
+    product_description: str
+    target_industry: str
+    company_size: str
+    target_persona: str
 
-# This model defines what the backend sends back to the frontend
-class AnalysisResponse(BaseModel):
-    status: str                    # "success" or "error"
-    comparison: Optional[str]      # Vendor comparison table
-    risks: Optional[str]           # Risk analysis results
-    negotiation: Optional[str]     # Negotiation strategies
-    recommendation: Optional[str]  # Final recommendation
-    message: Optional[str]         # Error message if something goes wrong
+class DiscoveryResponse(BaseModel):
+    status: str
+    plan: Optional[str]
+    icp_profile: Optional[str]
+    companies_found: Optional[str]
+    validated_companies: Optional[str]
+    decision_makers: Optional[str]
+    enriched_contacts: Optional[str]
+    recommendations: Optional[str]
+    message: Optional[str]

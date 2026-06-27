@@ -6,40 +6,61 @@ llm = ChatGroq(model=MODEL_NAME, api_key=GROQ_API_KEY)
 
 def recommendation_agent(state: ProcureAIState) -> ProcureAIState:
     """
-    Recommendation Agent.
-    Reads all previous agent outputs and makes a final vendor recommendation.
+    Recommendation Agent - Creates final actionable recommendations.
+    Reads all previous agent outputs and suggests next actions.
     """
-    vendor_names = state["vendor_names"]
-    comparison = state["comparison"]
-    risks = state["risks"]
-    negotiation = state["negotiation"]
-
     prompt = f"""
-    You are a Chief Procurement AI Agent.
+    You are a Chief Sales Strategy AI Agent.
     
-    Based on the complete analysis below, make a final vendor recommendation.
+    Based on the complete customer discovery analysis below,
+    provide final actionable recommendations for the sales team.
     
-    Vendors evaluated: {', '.join(vendor_names)}
+    PRODUCT: {state['product_description']}
+    TARGET PERSONA: {state['target_persona']}
     
-    Vendor Comparison:
-    {comparison}
+    ICP PROFILE:
+    {state['icp_profile']}
     
-    Risk Analysis:
-    {risks}
+    VALIDATED COMPANIES:
+    {state['validated_companies']}
     
-    Negotiation Strategies:
-    {negotiation}
+    DECISION MAKERS:
+    {state['decision_makers']}
+    
+    ENRICHED CONTACTS:
+    {state['enriched_contacts']}
     
     Provide:
-    1. RECOMMENDED VENDOR: (single best choice with clear reasoning)
-    2. WHY THIS VENDOR: (top 3 reasons)
-    3. CONDITIONS: (what terms to negotiate before signing)
-    4. ALTERNATIVE: (second best option if first choice falls through)
-    5. FINAL SUMMARY: (2-3 sentence executive summary for the procurement manager)
     
-    Be decisive and clear in your recommendation.
+    1. TOP PROSPECT: (single best company to contact first and why)
+    
+    2. PRIORITIZED OUTREACH LIST:
+       - Rank all companies from highest to lowest priority
+       - Include contact name and recommended approach for each
+    
+    3. OUTREACH SEQUENCE:
+       - Day 1: (action)
+       - Day 3: (action)
+       - Day 7: (action)
+       - Day 14: (action)
+    
+    4. EMAIL TEMPLATE:
+       - Subject line
+       - Opening line (personalized)
+       - Value proposition (2 sentences)
+       - Call to action
+    
+    5. EXPECTED OUTCOMES:
+       - Estimated response rate
+       - Expected meetings from this list
+       - Potential pipeline value
+    
+    6. NEXT STEPS:
+       - Immediate actions for the sales team
+    
+    Be specific, actionable, and realistic.
     """
 
     response = llm.invoke(prompt)
-    state["recommendation"] = response.content
+    state["recommendations"] = response.content
     return state
