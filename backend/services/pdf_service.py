@@ -89,7 +89,7 @@ def _section_title(page, title, y, color=NAVY):
 
 def _footer(page, page_num, total):
     _thin_divider(page, PAGE_H - 35)
-    _text(page, "ProcureAI  |  Customer Discovery Report  |  Confidential",
+    _text(page, "ProspectIQ  |  Customer Discovery Report  |  Confidential",
           MARGIN, PAGE_H - 20, size=8, color=GREY_TEXT)
     _text(page, f"Page {page_num} of {total}",
           PAGE_W - MARGIN - 60, PAGE_H - 20, size=8, color=GREY_TEXT)
@@ -100,7 +100,7 @@ def _footer(page, page_num, total):
 def _header_bar(page, title, subtitle=""):
     """Top navy bar for all inner pages."""
     page.draw_rect(fitz.Rect(0, 0, PAGE_W, 58), color=NAVY, fill=NAVY)
-    _text(page, "ProcureAI", MARGIN, 22, size=10, color=WHITE, bold=True)
+    _text(page, "ProspectIQ", MARGIN, 22, size=10, color=WHITE, bold=True)
     _text(page, title, MARGIN, 42, size=15, color=WHITE, bold=True)
     if subtitle:
         _text(page, subtitle,
@@ -302,7 +302,7 @@ def generate_pdf_report(results: dict, vendor_names: list) -> bytes:
     _text(page, "AI", MARGIN + 16, 158, size=32, color=NAVY, bold=True)
 
     # Title block
-    _text(page, "ProcureAI",                    MARGIN, 210, size=38, color=WHITE, bold=True)
+    _text(page, "ProspectIQ",                   MARGIN, 210, size=38, color=WHITE, bold=True)
     _text(page, "Customer Discovery Report",     MARGIN, 248, size=17, color=GREY_LINE)
     page.draw_line((MARGIN, 268), (PAGE_W - MARGIN, 268), color=WHITE, width=0.8)
 
@@ -343,7 +343,7 @@ def generate_pdf_report(results: dict, vendor_names: list) -> bytes:
     # PAGE 2 — TABLE OF CONTENTS
     # ══════════════════════════════════════════════════════════════════════════
     page = _new_page(doc, white=True)
-    y = _header_bar(page, "Table of Contents", "ProcureAI Discovery Report")
+    y = _header_bar(page, "Table of Contents", "ProspectIQ Discovery Report")
     y = _section_title(page, "Report Sections", y)
 
     sections = [

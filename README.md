@@ -1,13 +1,14 @@
-# 🤖 ProcureAI — Agentic Procurement Intelligence Platform
+# 🎯 ProspectIQ — Agentic AI Platform for B2B Customer Discovery
 
 ![Python](https://img.shields.io/badge/Python-3.13-blue?style=for-the-badge&logo=python)
 ![LangGraph](https://img.shields.io/badge/LangGraph-0.4.8-green?style=for-the-badge)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?style=for-the-badge&logo=fastapi)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.45-FF4B4B?style=for-the-badge&logo=streamlit)
-![Groq](https://img.shields.io/badge/Groq-LLaMA_3.3_70B-orange?style=for-the-badge)
+![Groq](https://img.shields.io/badge/Groq-LLaMA_3.1_8B-orange?style=for-the-badge)
+![Tavily](https://img.shields.io/badge/Tavily-Web_Search-blue?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
 
-> **An Agentic AI Platform where 6 specialized AI agents collaborate to automate vendor evaluation, risk detection, negotiation strategy, and procurement decisions.**
+> **An Agentic AI Platform where 7 specialized AI agents collaborate to automate B2B customer discovery, contact enrichment, and sales playbook generation.**
 
 Built for the **XLVentures.AI Hackathon** — focused on Agentic AI Platform Architecture.
 
@@ -31,46 +32,46 @@ Built for the **XLVentures.AI Hackathon** — focused on Agentic AI Platform Arc
 
 ## 💼 Business Problem
 
-Every company faces this challenge:
+Every B2B SaaS company faces this challenge:
 
-- Procurement teams receive **multiple vendor quotations** for every purchase
-- They spend **days manually reading**, comparing prices, checking risks, and negotiating terms
-- Human errors lead to **poor vendor selection** and financial losses
-- There is **no systematic way** to evaluate vendors consistently
+- Sales teams spend **days manually researching** companies that might be a good fit
+- They waste time chasing **leads that don't match** their Ideal Customer Profile
+- Finding the **right decision maker** inside a target company is time-consuming and inconsistent
+- There is **no systematic way** to discover, validate, and enrich prospects at scale
 
-**Result:** Slow decisions, missed savings, and hidden contractual risks.
+**Result:** Slow pipeline building, wasted outreach effort, and missed revenue opportunities.
 
 ---
 
 ## ✅ Solution
 
-**ProcureAI** is an Agentic AI Platform that acts as a **virtual procurement team**.
+**ProspectIQ** is an Agentic AI Platform that acts as a **virtual sales development team**.
 
-Upload vendor PDFs → 6 AI agents automatically analyze, compare, assess risk, suggest negotiation tactics, and recommend the best vendor — all in seconds.
+Enter your product, target industry, company size, decision maker role, and location → 7 AI agents automatically find real companies, validate them against your ICP, identify decision makers, enrich contact details, and deliver a ready-to-execute sales playbook — all in minutes.
 
-A **Human-in-the-Loop** approval step ensures the procurement manager stays in control of the final decision.
+A **Human-in-the-Loop** approval step ensures the sales manager stays in control before outreach begins.
 
 ---
 
 ## 🏗️ Architecture
 
-## 🏗️ Architecture
+![ProspectIQ Architecture](docs/diagrams/architecture.png)
 
-![ProcureAI Architecture](docs/diagrams/architecture.png)
 ---
 
 ## 🤖 AI Agents
 
-ProcureAI uses **6 specialized AI agents** orchestrated by LangGraph, each with a specific role:
+ProspectIQ uses **7 specialized AI agents** orchestrated by LangGraph, each with a specific role:
 
 | # | Agent | Role | Input | Output |
 |---|-------|------|-------|--------|
-| 1 | 📋 **Planner Agent** | Creates the analysis plan and strategy | Vendor names | Structured plan |
-| 2 | 📄 **Document Agent** | Extracts key info from each vendor PDF | Raw PDF text | Structured vendor data |
-| 3 | 🔍 **Comparison Agent** | Side-by-side vendor comparison | Extracted data | Comparison table |
-| 4 | ⚠️ **Risk Agent** | Identifies hidden risks and red flags | Extracted data | Risk report |
-| 5 | 🤝 **Negotiation Agent** | Suggests negotiation tactics per vendor | Comparison + Risks | Negotiation strategies |
-| 6 | ✅ **Recommendation Agent** | Makes the final vendor recommendation | All above outputs | Final decision |
+| 1 | 📋 **Planner Agent** | Creates a location-specific discovery strategy | User inputs | Structured discovery plan |
+| 2 | 🧩 **ICP Agent** | Defines the Ideal Customer Profile with qualification criteria | Plan + user inputs | Detailed ICP profile |
+| 3 | 🌐 **Web Search Agent** | Runs parallel Tavily searches to find real matching companies | ICP profile | Verified company list |
+| 4 | ✅ **Validation Agent** | Scores each company /100; location is a hard disqualifier | Companies found | Scored & ranked companies |
+| 5 | 👤 **Decision Maker Agent** | Finds the right contact inside each shortlisted company | Validated companies | Decision maker profiles |
+| 6 | 📬 **Enrichment Agent** | Finds emails, LinkedIn profiles, hooks, and email templates | Decision makers | Enriched contact cards |
+| 7 | 🎯 **Recommendation Agent** | Synthesises everything into a final ranked sales playbook | All agent outputs | Actionable sales playbook |
 
 ### 🧠 Shared Memory (LangGraph State)
 
@@ -78,15 +79,24 @@ All agents communicate through a **shared state** (`ProcureAIState`) — a typed
 
 ```python
 class ProcureAIState(TypedDict):
-    vendor_names: List[str]        # Input: vendor names
-    vendor_texts: List[str]        # Input: raw PDF text
-    plan: Optional[str]            # Planner agent output
-    extracted_data: Optional[str]  # Document agent output
-    comparison: Optional[str]      # Comparison agent output
-    risks: Optional[str]           # Risk agent output
-    negotiation: Optional[str]     # Negotiation agent output
-    recommendation: Optional[str]  # Recommendation agent output
-    human_approved: Optional[bool] # Human approval decision
+    # User inputs
+    product_description: str        # What the SaaS product does
+    target_industry: str            # Which industry to target
+    company_size: str               # Target company size
+    target_persona: str             # Who to contact (CEO, CTO etc.)
+    target_location: str            # Target geography (e.g. Mumbai, India)
+
+    # Agent outputs
+    plan: Optional[str]             # Planner Agent output
+    icp_profile: Optional[str]      # ICP Agent output
+    companies_found: Optional[str]  # Web Search Agent output
+    validated_companies: Optional[str]  # Validation Agent output
+    decision_makers: Optional[str]  # Decision Maker Agent output
+    enriched_contacts: Optional[str]  # Contact Enrichment Agent output
+    recommendations: Optional[str]  # Recommendation Agent output
+
+    # Human in the loop
+    human_approved: Optional[bool]
 ```
 
 Each agent **reads** from this state and **writes** its output back — no agent talks directly to another. This is clean, scalable, and fully extensible.
@@ -101,10 +111,11 @@ Each agent **reads** from this state and **writes** its output back — no agent
 | **LangGraph** | 0.4.8 | Multi-agent orchestration & state management |
 | **LangChain** | 0.3.25 | LLM integration layer |
 | **LangChain-Groq** | latest | Groq API connector |
-| **LLaMA 3.3 70B** | via Groq | AI model (free tier) |
+| **LLaMA 3.1 8B** | via Groq | AI model — 500k tokens/day free tier |
+| **Tavily** | latest | Real-time web search for company discovery |
 | **FastAPI** | 0.115 | REST API backend |
 | **Streamlit** | 1.45 | Frontend UI |
-| **PyMuPDF** | 1.25.5 | PDF text extraction |
+| **PyMuPDF** | 1.25.5 | PDF report generation |
 | **Pydantic** | 2.11.4 | Data validation |
 | **Uvicorn** | 0.34.3 | ASGI server |
 
@@ -113,46 +124,48 @@ Each agent **reads** from this state and **writes** its output back — no agent
 ## 📁 Project Structure
 
 ```
-procureai/
+prospectiq/
 │
-├── agents/                      # All AI agents
-│   ├── state.py                 # Shared memory (ProcureAIState)
-│   ├── graph.py                 # LangGraph pipeline wiring
-│   ├── planner_agent.py         # Agent 1: Planning
-│   ├── document_agent.py        # Agent 2: PDF extraction
-│   ├── comparison_agent.py      # Agent 3: Vendor comparison
-│   ├── risk_agent.py            # Agent 4: Risk analysis
-│   ├── negotiation_agent.py     # Agent 5: Negotiation strategy
-│   └── recommendation_agent.py  # Agent 6: Final recommendation
+├── agents/                          # All AI agents
+│   ├── state.py                     # Shared memory (ProcureAIState)
+│   ├── graph.py                     # LangGraph pipeline wiring
+│   ├── planner_agent.py             # Agent 1: Discovery strategy
+│   ├── icp_agent.py                 # Agent 2: Ideal Customer Profile
+│   ├── web_search_agent.py          # Agent 3: Parallel Tavily search
+│   ├── company_validation_agent.py  # Agent 4: Score & filter companies
+│   ├── decision_maker_agent.py      # Agent 5: Find right contacts
+│   ├── contact_enrichment_agent.py  # Agent 6: Enrich contact details
+│   └── recommendation_agent.py     # Agent 7: Final sales playbook
 │
-├── backend/                     # FastAPI backend
-│   ├── main.py                  # App entry point + CORS
-│   ├── models.py                # Request/Response schemas
+├── backend/                         # FastAPI backend
+│   ├── main.py                      # App entry point + CORS
 │   ├── routes/
-│   │   └── procurement.py       # API route handlers
+│   │   └── discovery.py             # API route handlers
 │   └── services/
-│       └── pdf_service.py       # PDF extraction + report generation
+│       └── pdf_service.py           # 8-page PDF report generation
 │
-├── frontend/                    # Streamlit UI
-│   ├── app.py                   # Main UI application
+├── frontend/                        # Streamlit UI
+│   ├── app.py                       # Main UI application
 │   └── components/
-│       ├── upload_section.py    # PDF upload component
-│       ├── results_section.py   # Results display component
-│       └── approval_section.py  # Human approval component
+│       ├── upload_section.py        # Input form component
+│       ├── results_section.py       # 6-tab results dashboard
+│       └── approval_section.py      # Human approval component
 │
 ├── config/
-│   └── settings.py              # API keys and configuration
+│   └── settings.py                  # API keys and configuration
 │
 ├── tests/
-│   └── test_agents.py           # Test suite
+│   └── test_agents.py               # Test suite
 │
 ├── docs/
-│   └── architecture.md          # Architecture documentation
+│   └── diagrams/
+│       └── architecture.png         # Architecture diagram
 │
-├── requirements.txt             # Python dependencies
-├── .env                         # API keys (not committed)
-├── .gitignore                   # Git ignore rules
-└── README.md                    # This file
+├── sample_data/                     # Sample inputs for testing
+├── requirements.txt                 # Python dependencies
+├── .env                             # API keys (not committed)
+├── .gitignore                       # Git ignore rules
+└── README.md                        # This file
 ```
 
 ---
@@ -162,11 +175,12 @@ procureai/
 ### Prerequisites
 - Python 3.13
 - A free [Groq API key](https://console.groq.com)
+- A free [Tavily API key](https://tavily.com)
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/procureai.git
-cd procureai
+git clone https://github.com/kashif030905/Procure_AI.git
+cd Procure_AI
 ```
 
 ### 2. Create virtual environment
@@ -179,7 +193,6 @@ source venv/bin/activate       # Mac/Linux
 ### 3. Install dependencies
 ```bash
 pip install -r requirements.txt
-pip install langchain-groq
 ```
 
 ### 4. Configure environment variables
@@ -187,8 +200,10 @@ pip install langchain-groq
 # Create .env file
 cp .env.example .env
 
-# Add your Groq API key
+# Add your API keys
 GROQ_API_KEY=your-groq-api-key-here
+TAVILY_API_KEY=your-tavily-api-key-here
+GROQ_MODEL=llama-3.1-8b-instant
 ```
 
 ### 5. Run the backend (Terminal 1)
@@ -213,26 +228,33 @@ http://localhost:8501
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `GET` | `/` | Health check |
-| `POST` | `/api/analyze` | Upload PDFs and run full agent pipeline |
+| `POST` | `/api/analyze` | Run the full 7-agent discovery pipeline |
 | `POST` | `/api/approve` | Human approval decision (true/false) |
-| `POST` | `/api/report` | Generate and download PDF report |
+| `POST` | `/api/report` | Generate and download PDF sales playbook |
 
-### Example: Analyze vendors
+### Example: Run discovery
 ```bash
 curl -X POST "http://localhost:8000/api/analyze" \
-  -F "files=@vendor_a.pdf" \
-  -F "files=@vendor_b.pdf"
+  -H "Content-Type: application/json" \
+  -d '{
+    "product_description": "Cloud-based project management software",
+    "target_industry": "IT and Software",
+    "target_company_size": "50-200 employees",
+    "target_role": "CTO",
+    "target_location": "Mumbai, India"
+  }'
 ```
 
 ### Example response
 ```json
 {
   "status": "success",
-  "comparison": "...",
-  "risks": "...",
-  "negotiation": "...",
-  "recommendation": "...",
-  "message": "Analysis complete for 2 vendors"
+  "icp_profile": "...",
+  "companies_found": "...",
+  "validated_companies": "...",
+  "decision_makers": "...",
+  "enriched_contacts": "...",
+  "recommendations": "..."
 }
 ```
 
@@ -240,31 +262,32 @@ curl -X POST "http://localhost:8000/api/analyze" \
 
 ## ✨ Features
 
-- 📤 **Multi-PDF Upload** — Upload 2 to 15 vendor quotation PDFs simultaneously
-- 🤖 **6 Specialized AI Agents** — Each agent has a distinct role and expertise
+- 🎯 **ICP-Driven Discovery** — Define your Ideal Customer Profile and let agents do the research
+- 🤖 **7 Specialized AI Agents** — Each agent has a distinct role and expertise
 - 🧠 **Shared Memory** — LangGraph state connects all agents seamlessly
-- 🔍 **Automatic Comparison** — Side-by-side vendor evaluation across price, delivery, warranty
-- ⚠️ **Risk Detection** — Identifies hidden costs, unfavorable clauses, delivery risks
-- 🤝 **Negotiation Strategies** — Specific tactics and leverage points per vendor
-- ✅ **AI Recommendation** — Clear, reasoned final vendor selection
-- 👤 **Human-in-the-Loop** — Procurement manager approves or rejects before finalizing
-- 📥 **Report Download** — Full analysis exportable as PDF or text
+- 🌐 **Real Web Search** — Tavily API finds actual companies, not hallucinated ones
+- ✅ **Location Hard Filter** — Companies outside your target location are automatically disqualified
+- 👤 **Decision Maker Finder** — Identifies the right contact inside each shortlisted company
+- 📬 **Contact Enrichment** — Email patterns, LinkedIn profiles, personalized hooks and templates
+- 🎯 **Ranked Sales Playbook** — Final recommendation with prioritised prospect list and 14-day outreach sequence
+- 👤 **Human-in-the-Loop** — Sales manager approves or rejects before outreach begins
+- 📥 **PDF Report** — Full 8-page discovery report downloadable as PDF
 - 🔄 **Extensible Architecture** — New agents can be added in minutes
 
 ---
 
 ## ⚙️ How It Works
 
-1. **Upload** — Procurement manager uploads vendor PDF quotations via the Streamlit UI
-2. **Extract** — PyMuPDF extracts raw text from each PDF
-3. **Plan** — Planner Agent creates a structured analysis strategy
-4. **Analyze** — Document Agent extracts key fields (price, terms, delivery, warranty)
-5. **Compare** — Comparison Agent builds a side-by-side vendor table
-6. **Risk Check** — Risk Agent flags financial, delivery, quality, and legal risks
-7. **Negotiate** — Negotiation Agent suggests leverage points and specific asks per vendor
-8. **Recommend** — Recommendation Agent picks the best vendor with clear reasoning
-9. **Approve** — Human procurement manager reviews and approves or rejects
-10. **Report** — Full analysis downloaded as a PDF report
+1. **Input** — Sales rep enters product description, target industry, company size, decision maker role, and location
+2. **Plan** — Planner Agent creates a location-specific discovery strategy
+3. **ICP** — ICP Agent defines the Ideal Customer Profile with hard and soft qualification criteria
+4. **Search** — Web Search Agent runs 5 parallel Tavily queries to find real matching companies
+5. **Validate** — Validation Agent scores each company /100; any company outside the target location scores 0
+6. **Decision Makers** — Decision Maker Agent searches LinkedIn and the web to find the right contact at each shortlisted company
+7. **Enrich** — Enrichment Agent finds emails, LinkedIn profiles, personalized hooks, and email templates for each contact
+8. **Recommend** — Recommendation Agent synthesises everything into a ranked playbook with a 14-day outreach sequence
+9. **Approve** — Sales manager reviews the results across 6 dashboard tabs and approves or rejects
+10. **Report** — Full discovery report downloaded as a professional PDF
 
 ---
 
@@ -274,9 +297,9 @@ Built for **XLVentures.AI Hackathon 2025**
 
 | Name | Role |
 |------|------|
-| Team Member 1 | AI Engineer |
-| Team Member 2 | Backend Engineer |
-| Team Member 3 | Frontend Engineer |
+| Syed Kashif Uddin| AI Engineer |
+| Sphoorthy Nidasanametla | Backend Engineer |
+| Sriprada Yegoti | Frontend Engineer |
 
 ---
 

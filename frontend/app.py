@@ -255,10 +255,10 @@ with st.sidebar:
 
     st.divider()
     st.subheader("ℹ️ System Info")
-    st.write("**Model:** LLaMA 3.3 70B")
+    st.write("**Model:** LLaMA 3.1 8B")
     st.write("**Framework:** LangGraph")
     st.write("**Backend:** FastAPI")
-    st.write("**Version:** 1.0.0")
+    st.write("**Version:** 2.0.0")
 
 # ── Agent Pipeline ─────────────────────────────────────────
 st.markdown('<div class="glow-divider"></div>', unsafe_allow_html=True)
