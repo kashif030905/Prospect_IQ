@@ -18,14 +18,15 @@ Built for the **XLVentures.AI Hackathon** — focused on Agentic AI Platform Arc
 
 - [Business Problem](#-business-problem)
 - [Solution](#-solution)
-- [Architecture](#-architecture)
+- [Architecture](#%EF%B8%8F-architecture)
+- [See It In Action](#-see-it-in-action)
 - [AI Agents](#-ai-agents)
-- [Tech Stack](#-tech-stack)
+- [Tech Stack](#%EF%B8%8F-tech-stack)
 - [Project Structure](#-project-structure)
 - [Setup Instructions](#-setup-instructions)
 - [API Endpoints](#-api-endpoints)
 - [Features](#-features)
-- [How It Works](#-how-it-works)
+- [How It Works](#%EF%B8%8F-how-it-works)
 - [Team](#-team)
 
 ---
@@ -56,6 +57,13 @@ A **Human-in-the-Loop** approval step ensures the sales manager stays in control
 ## 🏗️ Architecture
 
 ![ProspectIQ Architecture](docs/diagrams/architecture.png)
+
+---
+
+## 📄 See It In Action
+
+- 📊 **[Sample Input/Output Run](sample_testcase/prospectiq_sample_input_output.pdf)** — a real end-to-end execution showing exact inputs and what every agent produced
+- 🛠️ **[Tools & Technologies Used](tools_used/prospectiq_tools_and_technologies.pdf)** — full breakdown of the architecture, frameworks, and APIs powering ProspectIQ
 
 ---
 
@@ -119,12 +127,14 @@ Each agent **reads** from this state and **writes** its output back — no agent
 | **Pydantic** | 2.11.4 | Data validation |
 | **Uvicorn** | 0.34.3 | ASGI server |
 
+> 📄 See the full **[Tools & Technologies PDF](tools_used/prospectiq_tools_and_technologies.pdf)** for an in-depth walkthrough of every layer.
+
 ---
 
 ## 📁 Project Structure
 
 ```
-prospectiq/
+ProspectIQ/
 │
 ├── agents/                          # All AI agents
 │   ├── state.py                     # Shared memory (ProcureAIState)
@@ -135,10 +145,11 @@ prospectiq/
 │   ├── company_validation_agent.py  # Agent 4: Score & filter companies
 │   ├── decision_maker_agent.py      # Agent 5: Find right contacts
 │   ├── contact_enrichment_agent.py  # Agent 6: Enrich contact details
-│   └── recommendation_agent.py     # Agent 7: Final sales playbook
+│   └── recommendation_agent.py      # Agent 7: Final sales playbook
 │
 ├── backend/                         # FastAPI backend
 │   ├── main.py                      # App entry point + CORS
+│   ├── models.py                    # Pydantic models
 │   ├── routes/
 │   │   └── discovery.py             # API route handlers
 │   └── services/
@@ -152,18 +163,25 @@ prospectiq/
 │       └── approval_section.py      # Human approval component
 │
 ├── config/
-│   └── settings.py                  # API keys and configuration
+│   ├── settings.py                  # API keys and configuration
+│   └── rate_limiter.py              # Groq rate-limit handling
 │
 ├── tests/
 │   └── test_agents.py               # Test suite
 │
 ├── docs/
+│   ├── architecture.md              # Architecture write-up
 │   └── diagrams/
 │       └── architecture.png         # Architecture diagram
 │
-├── sample_data/                     # Sample inputs for testing
+├── sample_testcase/
+│   └── prospectiq_sample_input_output.pdf   📊 Sample run — full input/output
+│
+├── tools_used/
+│   └── prospectiq_tools_and_technologies.pdf   🛠️ Tools & architecture breakdown
+│
 ├── requirements.txt                 # Python dependencies
-├── .env                             # API keys (not committed)
+├── .env                              # API keys (not committed)
 ├── .gitignore                       # Git ignore rules
 └── README.md                        # This file
 ```
