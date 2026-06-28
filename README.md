@@ -310,5 +310,5 @@ MIT License — feel free to use, modify, and build on this project.
 ---
 
 <div align="center">
-  <strong>Built with ❤️ using LangGraph, FastAPI, and Streamlit</strong>
+  <strong>Built using LangGraph, FastAPI, and Streamlit</strong>
 </div>
