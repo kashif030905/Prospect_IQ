@@ -293,7 +293,7 @@ curl -X POST "http://localhost:8000/api/analyze" \
 
 ## 👥 Team
 
-Built for **XLVentures.AI Hackathon 2025**
+Built for **XLVentures.AI Hackathon 2026**
 
 | Name | Role |
 |------|------|
