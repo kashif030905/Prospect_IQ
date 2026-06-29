@@ -204,7 +204,7 @@ def _render_companies(text):
         why = _field(block, "WHY THEY MATCH")
 
         with st.container(border=True):
-            st.markdown(f"### 🏢 {name}")
+            st.markdown(f"**🏢 {name}**")
             if website:
                 st.markdown(f"🔗 [{website}]({website})")
 
@@ -271,7 +271,7 @@ def _render_validated(text):
         with st.container(border=True):
             col1, col2 = st.columns([3, 1])
             with col1:
-                st.markdown(f"### 🏢 {company_name}")
+                st.markdown(f"**🏢 {company_name}**")
                 if website and website.startswith("http"):
                     st.markdown(f"🔗 [{website}]({website})")
             with col2:
@@ -345,7 +345,7 @@ def _render_decision_makers(text):
         with st.container(border=True):
             col1, col2 = st.columns([3, 1])
             with col1:
-                st.markdown(f"### 👤 {name or 'To be verified'}")
+                st.markdown(f"**👤 {name or 'To be verified'}**")
                 st.caption(f"🏢 {company_name}  ·  💼 {title or '—'}")
             with col2:
                 if confidence:
@@ -409,7 +409,7 @@ def _render_enriched(text):
         cta = _field(block, "CTA")
 
         with st.container(border=True):
-            st.markdown(f"### 📬 {header}")
+            st.markdown(f"**📬 {header}**")
             st.divider()
 
             c1, c2, c3 = st.columns(3)

@@ -2,11 +2,9 @@ import sys
 import os
 import json
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 import streamlit as st
 import requests
 import time
-
 from frontend.components.upload_section import render_input_section
 from frontend.components.results_section import render_results_section, count_prospects
 from frontend.components.approval_section import render_approval_section
@@ -237,6 +235,54 @@ with st.sidebar:
         <div style="font-size:12px;color:#718096;">Reusable Agentic AI Platform</div>
     </div>
     """, unsafe_allow_html=True)
+
+    st.divider()
+
+    # ── Past Sessions ──────────────────────────────────────
+    st.subheader("🗂️ Past Sessions")
+    try:
+        resp = requests.get("http://127.0.0.1:8000/api/sessions", timeout=5)
+        if resp.status_code == 200:
+            sessions = resp.json().get("sessions", [])
+            if sessions:
+                for s in sessions[:5]:
+                    status_icon = "✅" if s["status"] == "approved" else "❌" if s["status"] == "rejected" else "🕐"
+                    label = f"{status_icon} {s['target_industry']} · {s['target_location']}"
+                    caption = s["created_at"]
+                    with st.expander(label):
+                        st.caption(caption)
+                        st.write(f"**Role:** {s['target_persona']}")
+                        st.write(f"**Size:** {s['company_size']}")
+                        st.write(f"**Product:** {s['product_description'][:80]}...")
+                        if st.button("Load this session", key=f"load_{s['id']}"):
+                            detail = requests.get(
+                                f"http://127.0.0.1:8000/api/sessions/{s['id']}",
+                                timeout=5
+                            ).json().get("session", {})
+                            st.session_state["results"] = {
+                                "plan":                detail.get("plan"),
+                                "icp_profile":         detail.get("icp_profile"),
+                                "companies_found":     detail.get("companies_found"),
+                                "validated_companies": detail.get("validated_companies"),
+                                "decision_makers":     detail.get("decision_makers"),
+                                "enriched_contacts":   detail.get("enriched_contacts"),
+                                "recommendations":     detail.get("recommendations"),
+                            }
+                            st.session_state["user_inputs"] = {
+                                "product_description": detail.get("product_description"),
+                                "target_industry":     detail.get("target_industry"),
+                                "target_company_size": detail.get("company_size"),
+                                "target_role":         detail.get("target_persona"),
+                                "target_location":     detail.get("target_location"),
+                            }
+                            st.rerun()
+            else:
+                st.caption("No past sessions yet. Run a discovery to save one.")
+        else:
+            st.caption("Could not load sessions.")
+    except Exception:
+        st.caption("Backend offline — past sessions unavailable.")
+
     st.divider()
 
     st.subheader("🤖 AI Agents")
@@ -298,7 +344,6 @@ st.markdown('<div class="glow-divider"></div>', unsafe_allow_html=True)
 # ── Analyze Button ─────────────────────────────────────────
 if user_inputs:
     if st.button("🚀 Start Customer Discovery", type="primary", use_container_width=True):
-
         progress_bar = st.progress(0)
         status_box   = st.empty()
 
@@ -344,7 +389,6 @@ if user_inputs:
             progress_bar.progress(80)
             time.sleep(0.8)
             mark("Enrichment", "done")
-
             mark("Recommendation", "running")
             status_box.info("🎯 Recommendation Agent finalising best prospect...")
             progress_bar.progress(90)
@@ -356,6 +400,7 @@ if user_inputs:
                 progress_bar.progress(100)
                 st.session_state["results"]     = results
                 st.session_state["user_inputs"] = user_inputs
+                st.session_state["session_id"]  = results.get("session_id")
                 status_box.success("✅ All agents completed! Scroll down to see your prospects.")
                 st.snow()
                 time.sleep(1)
@@ -380,7 +425,7 @@ if "results" in st.session_state:
     st.markdown('<div class="glow-divider"></div>', unsafe_allow_html=True)
 
     st.subheader("📥 Download Report")
-    inputs = st.session_state.get("user_inputs", {})
+    inputs  = st.session_state.get("user_inputs", {})
     results = st.session_state["results"]
 
     @st.cache_data(show_spinner=False, ttl=3600)
@@ -389,11 +434,11 @@ if "results" in st.session_state:
             "http://127.0.0.1:8000/api/report",
             json={
                 "product_description": product,
-                "target_industry": industry,
+                "target_industry":     industry,
                 "target_company_size": size,
-                "target_role": role,
-                "target_location": location,
-                "results": json.loads(_results_json),
+                "target_role":         role,
+                "target_location":     location,
+                "results":             json.loads(_results_json),
             },
             timeout=30,
         )
