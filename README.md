@@ -50,7 +50,7 @@ Every B2B SaaS company faces this challenge:
 
 Enter your product, target industry, company size, decision maker role, and location → 7 AI agents automatically find real companies, validate them against your ICP, identify decision makers, enrich contact details, and deliver a ready-to-execute sales playbook — all in minutes.
 
-A **Human-in-the-Loop** approval step ensures the sales manager stays in control before outreach begins.
+A **Human-in-the-Loop** approval step ensures the sales manager stays in control before outreach begins. All sessions are automatically saved to a **SQLite database** and can be reviewed anytime from the **Past Sessions** sidebar.
 
 ---
 
@@ -111,6 +111,34 @@ Each agent **reads** from this state and **writes** its output back — no agent
 
 ---
 
+## 🗄️ Database
+
+ProspectIQ persists every discovery session to a **SQLite database** (`prospectiq.db`) via `backend/database.py` using SQLAlchemy.
+
+### Schema — `DiscoverySession` table
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | UUID (PK) | Unique session identifier |
+| `created_at` | DateTime | Timestamp of the run |
+| `product_description` | Text | User input |
+| `target_industry` | String | User input |
+| `company_size` | String | User input |
+| `target_persona` | String | User input |
+| `target_location` | String | User input |
+| `status` | String | `completed` / `approved` / `rejected` |
+| `plan` | Text | Planner Agent output |
+| `icp_profile` | Text | ICP Agent output |
+| `companies_found` | Text | Web Search Agent output |
+| `validated_companies` | Text | Validation Agent output |
+| `decision_makers` | Text | Decision Maker Agent output |
+| `enriched_contacts` | Text | Enrichment Agent output |
+| `recommendations` | Text | Recommendation Agent output |
+
+The database is auto-created on startup via `init_db()` called in `backend/main.py`.
+
+---
+
 ## 🛠️ Tech Stack
 
 | Technology | Version | Purpose |
@@ -122,6 +150,8 @@ Each agent **reads** from this state and **writes** its output back — no agent
 | **LLaMA 3.1 8B** | via Groq | AI model — 500k tokens/day free tier |
 | **Tavily** | latest | Real-time web search for company discovery |
 | **FastAPI** | 0.115 | REST API backend |
+| **SQLAlchemy** | latest | ORM for SQLite session storage |
+| **SQLite** | built-in | Persistent session database (`prospectiq.db`) |
 | **Streamlit** | 1.45 | Frontend UI |
 | **PyMuPDF** | 1.25.5 | PDF report generation |
 | **Pydantic** | 2.11.4 | Data validation |
@@ -149,6 +179,7 @@ ProspectIQ/
 │
 ├── backend/                         # FastAPI backend
 │   ├── main.py                      # App entry point + CORS
+│   ├── database.py                  # SQLite DB — sessions storage (SQLAlchemy)
 │   ├── models.py                    # Pydantic models
 │   ├── routes/
 │   │   └── discovery.py             # API route handlers
@@ -180,8 +211,9 @@ ProspectIQ/
 ├── tools_used/
 │   └── prospectiq_tools_and_technologies.pdf   🛠️ Tools & architecture breakdown
 │
+├── prospectiq.db                    # SQLite database (auto-created on startup)
 ├── requirements.txt                 # Python dependencies
-├── .env                              # API keys (not committed)
+├── .env                             # API keys (not committed)
 ├── .gitignore                       # Git ignore rules
 └── README.md                        # This file
 ```
@@ -239,6 +271,8 @@ streamlit run frontend/app.py
 http://localhost:8501
 ```
 
+> The SQLite database (`prospectiq.db`) is created automatically on first startup. No setup required.
+
 ---
 
 ## 🔌 API Endpoints
@@ -249,6 +283,8 @@ http://localhost:8501
 | `POST` | `/api/analyze` | Run the full 7-agent discovery pipeline |
 | `POST` | `/api/approve` | Human approval decision (true/false) |
 | `POST` | `/api/report` | Generate and download PDF sales playbook |
+| `GET` | `/api/sessions` | List all past discovery sessions |
+| `GET` | `/api/sessions/{session_id}` | Retrieve a specific session by ID |
 
 ### Example: Run discovery
 ```bash
@@ -267,6 +303,7 @@ curl -X POST "http://localhost:8000/api/analyze" \
 ```json
 {
   "status": "success",
+  "session_id": "3f7a1c2e-...",
   "icp_profile": "...",
   "companies_found": "...",
   "validated_companies": "...",
@@ -276,19 +313,31 @@ curl -X POST "http://localhost:8000/api/analyze" \
 }
 ```
 
+### Example: List sessions
+```bash
+curl "http://localhost:8000/api/sessions"
+```
+
+### Example: Get a specific session
+```bash
+curl "http://localhost:8000/api/sessions/3f7a1c2e-..."
+```
+
 ---
 
 ## ✨ Features
 
 - 🎯 **ICP-Driven Discovery** — Define your Ideal Customer Profile and let agents do the research
 - 🤖 **7 Specialized AI Agents** — Each agent has a distinct role and expertise
-- 🧠 **Shared Memory** — LangGraph state connects all agents seamlessly
+- 🧠 **Shared Memory** — LangGraph `ProspectIQState` connects all agents seamlessly
 - 🌐 **Real Web Search** — Tavily API finds actual companies, not hallucinated ones
 - ✅ **Location Hard Filter** — Companies outside your target location are automatically disqualified
 - 👤 **Decision Maker Finder** — Identifies the right contact inside each shortlisted company
 - 📬 **Contact Enrichment** — Email patterns, LinkedIn profiles, personalized hooks and templates
 - 🎯 **Ranked Sales Playbook** — Final recommendation with prioritised prospect list and 14-day outreach sequence
 - 👤 **Human-in-the-Loop** — Sales manager approves or rejects before outreach begins
+- 🗄️ **Session Persistence** — Every run is saved to SQLite and accessible via the Past Sessions sidebar
+- 📋 **Past Sessions Sidebar** — Browse, review, and reload any previous discovery session from the Streamlit UI
 - 📥 **PDF Report** — Full 8-page discovery report downloadable as PDF
 - 🔄 **Extensible Architecture** — New agents can be added in minutes
 
@@ -304,8 +353,10 @@ curl -X POST "http://localhost:8000/api/analyze" \
 6. **Decision Makers** — Decision Maker Agent searches LinkedIn and the web to find the right contact at each shortlisted company
 7. **Enrich** — Enrichment Agent finds emails, LinkedIn profiles, personalized hooks, and email templates for each contact
 8. **Recommend** — Recommendation Agent synthesises everything into a ranked playbook with a 14-day outreach sequence
-9. **Approve** — Sales manager reviews the results across 6 dashboard tabs and approves or rejects
-10. **Report** — Full discovery report downloaded as a professional PDF
+9. **Save** — The full session (inputs + all agent outputs) is saved to the SQLite database with a unique session ID
+10. **Approve** — Sales manager reviews the results across 6 dashboard tabs and approves or rejects
+11. **Report** — Full discovery report downloaded as a professional PDF
+12. **Review** — Past sessions can be accessed anytime from the **Past Sessions** section in the Streamlit sidebar
 
 ---
 
@@ -315,7 +366,7 @@ Built for **XLVentures.AI Hackathon 2026**
 
 | Name | Role |
 |------|------|
-| Syed Kashif Uddin| AI Engineer |
+| Syed Kashif Uddin | AI Engineer |
 | Sphoorthy Nidasanametla | Backend Engineer |
 | Sriprada Yegoti | Frontend Engineer |
 
