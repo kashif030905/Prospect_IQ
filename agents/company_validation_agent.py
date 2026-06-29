@@ -1,10 +1,10 @@
 from langchain_groq import ChatGroq
 from config.settings import GROQ_API_KEY, MODEL_NAME
-from agents.state import ProcureAIState
+from agents.state import ProspectIQState
 
 llm = ChatGroq(model=MODEL_NAME, api_key=GROQ_API_KEY)
 
-def company_validation_agent(state: ProcureAIState) -> ProcureAIState:
+def company_validation_agent(state: ProspectIQState) -> ProspectIQState:
     """
     Company Validation Agent - Deep validates and scores each company.
     Produces a professional comparison table with clear reasoning.

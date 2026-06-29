@@ -1,7 +1,7 @@
 import re
 from langchain_groq import ChatGroq
 from config.settings import GROQ_API_KEY, MODEL_NAME
-from agents.state import ProcureAIState
+from agents.state import ProspectIQState
 
 llm = ChatGroq(model=MODEL_NAME, api_key=GROQ_API_KEY)
 
@@ -68,7 +68,7 @@ def _table_rows(names: list[str], scores: dict[str, int]) -> str:
     return "\n".join(rows)
 
 
-def recommendation_agent(state: ProcureAIState) -> ProcureAIState:
+def recommendation_agent(state: ProspectIQState) -> ProspectIQState:
     """
     Recommendation Agent - Synthesises all agent outputs into a final,
     actionable sales playbook. This is the board-level summary.
@@ -139,7 +139,7 @@ def recommendation_agent(state: ProcureAIState) -> ProcureAIState:
         prospect_count = n
 
     prompt = f"""
-    You are the Chief Revenue Officer (CRO) AI Agent for ProcureAI.
+    You are the Chief Revenue Officer (CRO) AI Agent for ProspectIQ.
 
     You have received the full customer discovery analysis from 6 specialised agents.
     Your job: synthesise everything into a crisp, professional sales playbook that

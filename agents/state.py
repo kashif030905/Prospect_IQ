@@ -1,6 +1,6 @@
 from typing import TypedDict, List, Optional
 
-class ProcureAIState(TypedDict):
+class ProspectIQState(TypedDict):
     """
     Shared memory for the Customer Discovery Agent Pipeline.
     Every agent reads from and writes to this state.

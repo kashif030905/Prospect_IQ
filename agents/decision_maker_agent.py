@@ -3,12 +3,12 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from langchain_groq import ChatGroq
 from tavily import TavilyClient
 from config.settings import GROQ_API_KEY, MODEL_NAME, TAVILY_API_KEY
-from agents.state import ProcureAIState
+from agents.state import ProspectIQState
 
 llm    = ChatGroq(model=MODEL_NAME, api_key=GROQ_API_KEY)
 tavily = TavilyClient(api_key=TAVILY_API_KEY)
 
-def decision_maker_agent(state: ProcureAIState) -> ProcureAIState:
+def decision_maker_agent(state: ProspectIQState) -> ProspectIQState:
     location = state['target_location']
     persona  = state['target_persona']
 

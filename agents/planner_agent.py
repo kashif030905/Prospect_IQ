@@ -1,10 +1,10 @@
 from langchain_groq import ChatGroq
 from config.settings import GROQ_API_KEY, MODEL_NAME
-from agents.state import ProcureAIState
+from agents.state import ProspectIQState
 
 llm = ChatGroq(model=MODEL_NAME, api_key=GROQ_API_KEY)
 
-def planner_agent(state: ProcureAIState) -> ProcureAIState:
+def planner_agent(state: ProspectIQState) -> ProspectIQState:
     """
     Planner Agent - Orchestrates the entire customer discovery workflow.
     Reads user inputs and creates a detailed, location-specific discovery strategy.

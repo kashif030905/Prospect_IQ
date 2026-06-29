@@ -1,5 +1,5 @@
 from langgraph.graph import StateGraph, END
-from agents.state import ProcureAIState
+from agents.state import ProspectIQState
 from agents.planner_agent import planner_agent
 from agents.icp_agent import icp_agent
 from agents.web_search_agent import web_search_agent
@@ -13,7 +13,7 @@ def create_discovery_graph():
     Creates the Customer Discovery Agent Pipeline.
     Defines the order in which agents run.
     """
-    graph = StateGraph(ProcureAIState)
+    graph = StateGraph(ProspectIQState)
 
     # Add all agents as nodes
     graph.add_node("planner_node", planner_agent)

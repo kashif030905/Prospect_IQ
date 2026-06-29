@@ -83,10 +83,10 @@ ProspectIQ uses **7 specialized AI agents** orchestrated by LangGraph, each with
 
 ### 🧠 Shared Memory (LangGraph State)
 
-All agents communicate through a **shared state** (`ProcureAIState`) — a typed dictionary that acts like a shared workspace:
+All agents communicate through a **shared state** (`ProspectIQState`) — a typed dictionary that acts like a shared workspace:
 
 ```python
-class ProcureAIState(TypedDict):
+class ProspectIQState(TypedDict):
     # User inputs
     product_description: str        # What the SaaS product does
     target_industry: str            # Which industry to target
@@ -137,7 +137,7 @@ Each agent **reads** from this state and **writes** its output back — no agent
 ProspectIQ/
 │
 ├── agents/                          # All AI agents
-│   ├── state.py                     # Shared memory (ProcureAIState)
+│   ├── state.py                     # Shared memory (ProspectIQState)
 │   ├── graph.py                     # LangGraph pipeline wiring
 │   ├── planner_agent.py             # Agent 1: Discovery strategy
 │   ├── icp_agent.py                 # Agent 2: Ideal Customer Profile
