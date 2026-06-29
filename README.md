@@ -12,6 +12,7 @@
 
 Built for the **XLVentures.AI Hackathon** — focused on Agentic AI Platform Architecture.
 
+> 🔗 **GitHub Repository:** https://github.com/kashif030905/Prospect_IQ
 ---
 
 ## 📌 Table of Contents
